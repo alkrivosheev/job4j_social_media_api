@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>job4j</groupId>
-	<artifactId>social_media_api</artifactId>
+	<artifactId>socialMediaApi</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>social_media_api</name>
+	<name>socialMediaApi</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>
