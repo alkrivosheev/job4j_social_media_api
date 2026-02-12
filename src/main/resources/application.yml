@@ -1,0 +1,63 @@
+# application.yml
+
+spring:
+  profiles:
+    active: dev
+  application:
+    name: socialMediaApi
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/social_media_dev
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    contexts: dev
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: ${TEST_DATASOURCE_URL}
+    username: ${TEST_DATASOURCE_USERNAME}
+    password: ${TEST_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  liquibase:
+    enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    contexts: prod

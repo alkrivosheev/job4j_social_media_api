@@ -4,33 +4,40 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 @SpringBootTest
+@ActiveProfiles("test")
 public class PostgresTestContainerTest {
 
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:latest")
-            .withDatabaseName("social_media_test")
+            .withDatabaseName("testdb")
             .withUsername("test")
             .withPassword("test");
 
+    /**
+     * Динамический источник свойств.
+     * Этот метод вызывается до загрузки Spring контекста.
+     * Он сообщает Spring использовать URL, имя пользователя и пароль,
+     * предоставленные запущенным контейнером PostgreSQL.
+     */
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        System.out.println("JDBC URL: " + postgres.getJdbcUrl()); // Для отладки
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-        // Явно отключаем H2 для этого теста
-        registry.add("spring.datasource.driver-class-name", () -> "org.postgresql.Driver");
+        registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
     }
+
 
     @BeforeAll
     static void beforeAll() {
@@ -44,8 +51,6 @@ public class PostgresTestContainerTest {
 
     @Test
     void testContainerIsRunning() {
-
-        assertTrue(postgres.isRunning());
-        System.out.println("Test passed! Using database: " + postgres.getJdbcUrl());
+        assertThat(postgres.isRunning()).isTrue();
     }
 }
