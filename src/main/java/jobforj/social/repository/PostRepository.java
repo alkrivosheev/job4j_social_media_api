@@ -27,13 +27,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.user IN :users AND p.isDeleted = false ORDER BY p.createdAt DESC")
     Page<Post> findPostsByUsers(@Param("users") List<User> users, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.user IN " +
-            "(SELECT s.following FROM Subscription s WHERE s.follower.id = :userId) "
+    @Query("SELECT p FROM Post p WHERE p.user IN "
+            + "(SELECT s.following FROM Subscription s WHERE s.follower.id = :userId) "
             + "AND p.isDeleted = false ORDER BY p.createdAt DESC")
     Page<Post> getFeedForUser(@Param("userId") Long userId, Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.user IN " +
-            "(SELECT s.following FROM Subscription s WHERE s.follower = :user) "
+    @Query("SELECT p FROM Post p WHERE p.user IN "
+            + "(SELECT s.following FROM Subscription s WHERE s.follower = :user) "
             + "AND p.isDeleted = false ORDER BY p.createdAt DESC")
     Page<Post> getFeedForUser(@Param("user") User user, Pageable pageable);
 
