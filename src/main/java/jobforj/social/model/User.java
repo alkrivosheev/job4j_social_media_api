@@ -1,4 +1,4 @@
-package job4j.social.model;
+package jobforj.social.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,6 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.annotations.Where;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;

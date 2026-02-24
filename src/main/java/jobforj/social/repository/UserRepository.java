@@ -1,7 +1,7 @@
-package job4j.social.repository;
+package jobforj.social.repository;
 
 
-import job4j.social.model.User;
+import jobforj.social.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

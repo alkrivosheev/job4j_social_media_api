@@ -1,7 +1,7 @@
-package job4j.social.repository;
+package jobforj.social.repository;
 
-import job4j.social.model.Post;
-import job4j.social.model.User;
+import jobforj.social.model.Post;
+import jobforj.social.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,13 +28,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findPostsByUsers(@Param("users") List<User> users, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.user IN " +
-            "(SELECT s.following FROM Subscription s WHERE s.follower.id = :userId) " +
-            "AND p.isDeleted = false ORDER BY p.createdAt DESC")
+            "(SELECT s.following FROM Subscription s WHERE s.follower.id = :userId) "
+            + "AND p.isDeleted = false ORDER BY p.createdAt DESC")
     Page<Post> getFeedForUser(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE p.user IN " +
-            "(SELECT s.following FROM Subscription s WHERE s.follower = :user) " +
-            "AND p.isDeleted = false ORDER BY p.createdAt DESC")
+            "(SELECT s.following FROM Subscription s WHERE s.follower = :user) "
+            + "AND p.isDeleted = false ORDER BY p.createdAt DESC")
     Page<Post> getFeedForUser(@Param("user") User user, Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user.id = :userId AND p.isDeleted = false")

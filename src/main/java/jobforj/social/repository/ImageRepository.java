@@ -1,7 +1,7 @@
-package job4j.social.repository;
+package jobforj.social.repository;
 
-import job4j.social.model.Image;
-import job4j.social.model.Post;
+import jobforj.social.model.Image;
+import jobforj.social.model.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

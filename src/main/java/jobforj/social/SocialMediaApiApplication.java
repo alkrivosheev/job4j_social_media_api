@@ -1,4 +1,4 @@
-package job4j.social;
+package jobforj.social;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

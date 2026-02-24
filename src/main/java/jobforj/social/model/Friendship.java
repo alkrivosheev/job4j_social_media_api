@@ -1,4 +1,4 @@
-package job4j.social.model;
+package jobforj.social.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
