@@ -57,11 +57,10 @@ public class Post {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @Builder.Default
     private List<Image> images = new ArrayList<>();
 
-    // Helper methods
     public void addImage(Image image) {
         images.add(image);
         image.setPost(this);
