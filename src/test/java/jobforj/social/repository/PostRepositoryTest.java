@@ -409,4 +409,45 @@ class PostRepositoryTest {
             postRepository.save(post);
         });
     }
+
+    @Test
+    void whenFindByUserOrderByCreatedAtDescThenReturnAllUserPostsSorted() {
+        List<Post> userPosts = postRepository.findByUserOrderByCreatedAtDesc(user1);
+
+        assertThat(userPosts).hasSize(2);
+        assertThat(userPosts)
+                .extracting(Post::getTitle)
+                .containsExactly( "Second Post","First Post");
+        assertThat(userPosts)
+                .allMatch(post -> post.getUser().getId().equals(user1.getId()));
+        assertThat(userPosts)
+                .allMatch(post -> !post.getIsDeleted());
+    }
+
+    @Test
+    void whenFindByCreatedAtBetweenOrderByCreatedAtDescThenReturnPostsInRange() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate = now.minusDays(2);
+        LocalDateTime endDate = now;
+
+        List<Post> postsInRange = postRepository.findByCreatedAtBetweenOrderByCreatedAtDesc(startDate, endDate);
+
+        assertThat(postsInRange).hasSize(3);
+        assertThat(postsInRange)
+                .extracting(Post::getTitle)
+                .containsExactly("Third Post", "Second Post", "First Post");
+    }
+
+    @Test
+    void whenFindAllByOrderByCreatedAtDescThenReturnAllPostsSortedWithPagination() {
+        Pageable pageable = PageRequest.of(0, 2, Sort.by("createdAt").descending());
+        Page<Post> page = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+
+        assertThat(page.getContent()).hasSize(2);
+        assertThat(page.getContent())
+                .extracting(Post::getTitle)
+                .containsExactly("Third Post", "Second Post");
+        assertThat(page.getTotalElements()).isEqualTo(3);
+        assertThat(page.getTotalPages()).isEqualTo(2);
+    }
 }
