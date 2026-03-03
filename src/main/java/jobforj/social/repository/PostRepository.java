@@ -17,6 +17,26 @@ import java.util.List;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
 
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            UPDATE Post post 
+                           SET post.title = :title,
+                            post.content = :content,
+                            post.updatedAt = CURRENT_TIMESTAMP
+            WHERE post.id = :id
+            """)
+    int updatePost(@Param("title") String title, @Param("content") String content, @Param("id") Long id);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE FROM Image i WHERE i.id = :imageId AND i.post.id = :postId")
+    int deleteImageByIdAndPostId(@Param("imageId") Long imageId, @Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+            DELETE Post post WHERE post.id = :id
+            """)
+    int deletePost(@Param("id") Long id);
+
     List<Post> findByUserOrderByCreatedAtDesc(User user);
 
     List<Post> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate, LocalDateTime endDate);

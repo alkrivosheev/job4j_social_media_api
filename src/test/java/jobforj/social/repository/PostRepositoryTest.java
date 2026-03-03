@@ -1,6 +1,7 @@
 package jobforj.social.repository;
 
 import jobforj.social.model.Post;
+import jobforj.social.model.Image;
 import jobforj.social.model.Subscription;
 import jobforj.social.model.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -449,5 +451,186 @@ class PostRepositoryTest {
                 .containsExactly("Third Post", "Second Post");
         assertThat(page.getTotalElements()).isEqualTo(3);
         assertThat(page.getTotalPages()).isEqualTo(2);
+    }
+
+    @Test
+    void whenUpdatePostWithValidDataThenPostIsUpdated() {
+        Long postId = Long.valueOf(post1.getId());
+        String newTitle = "Updated First Post Title";
+        String newContent = "Updated content of first post";
+
+        Post originalPost = postRepository.findById(postId).orElse(null);
+        assertThat(originalPost).isNotNull();
+        assertThat(originalPost.getTitle()).isEqualTo("First Post");
+        assertThat(originalPost.getContent()).isEqualTo("Content of first post");
+
+        LocalDateTime timeBeforeUpdate = LocalDateTime.now();
+
+        int updatedCount = postRepository.updatePost(newTitle, newContent, postId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(updatedCount).isEqualTo(1);
+
+        Post updatedPost = postRepository.findById(postId).orElse(null);
+        assertThat(updatedPost).isNotNull();
+        assertThat(updatedPost.getTitle()).isEqualTo(newTitle);
+        assertThat(updatedPost.getContent()).isEqualTo(newContent);
+        assertThat(updatedPost.getUser().getId()).isEqualTo(user1.getId());
+        assertThat(updatedPost.getIsDeleted()).isFalse();
+        assertThat(updatedPost.getCreatedAt()).isEqualTo(originalPost.getCreatedAt());
+
+        assertThat(updatedPost.getUpdatedAt()).isNotNull();
+        assertThat(updatedPost.getUpdatedAt()).isNotEqualTo(originalPost.getUpdatedAt());
+
+        assertThat(updatedPost.getUpdatedAt())
+                .isAfter(timeBeforeUpdate.minusSeconds(1))
+                .isBefore(timeBeforeUpdate.plusSeconds(5));
+    }
+
+    @Test
+    void whenUpdatePostWithInvalidIdThenNoPostIsUpdated() {
+        Long nonExistentPostId = 999L;
+        String newTitle = "This Should Not Update";
+        String newContent = "This content should not be saved";
+
+        List<Post> allPostsBefore = postRepository.findAll();
+
+        int updatedCount = postRepository.updatePost(newTitle, newContent, nonExistentPostId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(updatedCount).isEqualTo(0);
+
+        List<Post> allPostsAfter = postRepository.findAll();
+        assertThat(allPostsAfter).hasSameSizeAs(allPostsBefore);
+
+        for (int i = 0; i < allPostsBefore.size(); i++) {
+            Post before = allPostsBefore.get(i);
+            Post after = allPostsAfter.get(i);
+            assertThat(after.getTitle()).isEqualTo(before.getTitle());
+            assertThat(after.getContent()).isEqualTo(before.getContent());
+        }
+
+        Optional<Post> nonExistentPost = postRepository.findById(nonExistentPostId);
+        assertThat(nonExistentPost).isEmpty();
+    }
+
+    @Test
+    void whenDeleteImageByIdAndPostIdWithValidIdsThenImageIsDeleted() {
+        Post post = post1;
+
+        Image image = Image.builder()
+                .post(post)
+                .url("/images/test-image.jpg")
+                .fileName("test-image.jpg")
+                .fileSize(1024)
+                .uploadDate(LocalDateTime.now())
+                .build();
+
+        entityManager.persist(image);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        Long imageId = Long.valueOf(image.getId());
+        Long postId = Long.valueOf(post.getId());
+
+        Image foundImage = entityManager.find(Image.class, imageId);
+        assertThat(foundImage).isNotNull();
+        assertThat(foundImage.getPost().getId()).isEqualTo(post.getId());
+
+        int deletedCount = postRepository.deleteImageByIdAndPostId(imageId, postId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(deletedCount).isEqualTo(1);
+
+        Image deletedImage = entityManager.find(Image.class, imageId);
+        assertThat(deletedImage).isNull();
+
+        Post existingPost = entityManager.find(Post.class, postId);
+        assertThat(existingPost).isNotNull();
+        assertThat(existingPost.getTitle()).isEqualTo(post.getTitle());
+    }
+
+    @Test
+    void whenDeleteImageByIdAndPostIdWithWrongPostIdThenNoImageDeleted() {
+        Post post = post1;
+        Long wrongPostId = 999L;
+
+        Image image = Image.builder()
+                .post(post)
+                .url("/images/test-image.jpg")
+                .fileName("test-image.jpg")
+                .fileSize(1024)
+                .uploadDate(LocalDateTime.now())
+                .build();
+
+        entityManager.persist(image);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        Long imageId = Long.valueOf(image.getId());
+
+        Image foundImage = entityManager.find(Image.class, imageId);
+        assertThat(foundImage).isNotNull();
+
+        int deletedCount = postRepository.deleteImageByIdAndPostId(imageId, wrongPostId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(deletedCount).isEqualTo(0);
+
+        Image existingImage = entityManager.find(Image.class, imageId);
+        assertThat(existingImage).isNotNull();
+        assertThat(existingImage.getPost().getId()).isEqualTo(post.getId());
+        assertThat(existingImage.getFileName()).isEqualTo("test-image.jpg");
+    }
+
+    @Test
+    void whenDeletePostWithValidIdThenPostIsDeleted() {
+        Long postId = Long.valueOf(post1.getId());
+
+        Post foundPost = postRepository.findById(postId).orElse(null);
+        assertThat(foundPost).isNotNull();
+        assertThat(foundPost.getTitle()).isEqualTo("First Post");
+
+        int deletedCount = postRepository.deletePost(postId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(deletedCount).isEqualTo(1);
+
+        Optional<Post> deletedPost = postRepository.findById(postId);
+        assertThat(deletedPost).isEmpty();
+
+        Post physicallyDeleted = entityManager.find(Post.class, postId);
+        assertThat(physicallyDeleted).isNull();
+
+        assertThat(postRepository.findById(Long.valueOf(post2.getId()))).isPresent();
+        assertThat(postRepository.findById(Long.valueOf(post3.getId()))).isPresent();
+    }
+
+    @Test
+    void whenDeletePostWithInvalidIdThenNoPostIsDeleted() {
+        Long nonExistentPostId = 999L;
+        long postsCountBefore = postRepository.count();
+
+        int deletedCount = postRepository.deletePost(nonExistentPostId);
+        testEntityManager.flush();
+        testEntityManager.clear();
+
+        assertThat(deletedCount).isEqualTo(0);
+
+        long postsCountAfter = postRepository.count();
+        assertThat(postsCountAfter).isEqualTo(postsCountBefore);
+
+        assertThat(postRepository.findById(Long.valueOf(post1.getId()))).isPresent();
+        assertThat(postRepository.findById(Long.valueOf(post2.getId()))).isPresent();
+        assertThat(postRepository.findById(Long.valueOf(post3.getId()))).isPresent();
+
+        Post post = entityManager.find(Post.class, Long.valueOf(post1.getId()));
+        assertThat(post).isNotNull();
+        assertThat(post.getIsDeleted()).isFalse();
     }
 }
