@@ -80,4 +80,25 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findPostsInDateRange(@Param("startDate") LocalDateTime startDate,
                                     @Param("endDate") LocalDateTime endDate,
                                     Pageable pageable);
+
+    @Modifying(clearAutomatically = true)
+    @Query("""
+    UPDATE Post post 
+    SET post.title = :title,
+        post.content = :content,
+        post.updatedAt = CURRENT_TIMESTAMP
+    WHERE post.id = :postId AND post.user.id = :userId
+    """)
+    int updateUserPost(@Param("userId") Long userId,
+                       @Param("postId") Long postId,
+                       @Param("title") String title,
+                       @Param("content") String content);
+
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE Post p SET p.isDeleted = true WHERE p.id = :postId AND p.user.id = :userId")
+    int softDeleteUserPost(@Param("userId") Long userId, @Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("DELETE Post p WHERE p.id = :postId AND p.user.id = :userId")
+    int deleteUserPost(@Param("userId") Long userId, @Param("postId") Long postId);
 }

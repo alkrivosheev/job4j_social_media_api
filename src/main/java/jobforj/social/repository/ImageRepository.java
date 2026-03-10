@@ -33,4 +33,9 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
     @Query("SELECT COUNT(i) FROM Image i WHERE i.post.id = :postId")
     long countByPostId(@Param("postId") Long postId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Image i SET i.post.id = :postId WHERE i.id IN :imageIds")
+    void attachImagesToPost(@Param("imageIds") List<Long> imageIds, @Param("postId") Long postId);
 }
