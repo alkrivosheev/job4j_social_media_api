@@ -413,21 +413,16 @@ public class SubscriptionService {
         if (userId.equals(friendId)) {
             throw new IllegalArgumentException("Пользователь не может быть другом самому себе");
         }
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
         User friend = userRepository.findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("Друг не найден"));
-
         boolean areFriends = friendshipRepository.areFriends(user, friend);
-
         if (!areFriends) {
             return false;
         }
-
         boolean userFollowsFriend = subscriptionRepository.isFollowing(userId, friendId);
         boolean friendFollowsUser = subscriptionRepository.isFollowing(friendId, userId);
-
         if (!userFollowsFriend || !friendFollowsUser) {
             if (!userFollowsFriend) {
                 Subscription subscription = new Subscription();
@@ -436,7 +431,6 @@ public class SubscriptionService {
                 subscription.setCreatedAt(LocalDateTime.now());
                 subscriptionRepository.save(subscription);
             }
-
             if (!friendFollowsUser) {
                 Subscription subscription = new Subscription();
                 subscription.setFollower(friend);
@@ -444,10 +438,8 @@ public class SubscriptionService {
                 subscription.setCreatedAt(LocalDateTime.now());
                 subscriptionRepository.save(subscription);
             }
-
             return true;
         }
-
         return true;
     }
 
@@ -461,20 +453,15 @@ public class SubscriptionService {
     public Map<String, Long> verifyAllFriendships() {
         long fixedCount = 0;
         long checkedCount = 0;
-
         List<Friendship> acceptedFriendships = friendshipRepository.findAll().stream()
                 .filter(f -> f.getStatus() == Friendship.FriendshipStatus.ACCEPTED)
                 .toList();
-
         for (Friendship friendship : acceptedFriendships) {
             User user = friendship.getRequester();
             User friend = friendship.getAddressee();
-
             boolean userFollowsFriend = subscriptionRepository.isFollowing(user.getId().longValue(), friend.getId().longValue());
             boolean friendFollowsUser = subscriptionRepository.isFollowing(friend.getId().longValue(), user.getId().longValue());
-
             checkedCount++;
-
             if (!userFollowsFriend || !friendFollowsUser) {
                 if (!userFollowsFriend) {
                     Subscription subscription = new Subscription();
@@ -484,7 +471,6 @@ public class SubscriptionService {
                     subscriptionRepository.save(subscription);
                     fixedCount++;
                 }
-
                 if (!friendFollowsUser) {
                     Subscription subscription = new Subscription();
                     subscription.setFollower(friend);
@@ -495,7 +481,6 @@ public class SubscriptionService {
                 }
             }
         }
-
         return Map.of(
                 "checked", checkedCount,
                 "fixed", fixedCount
