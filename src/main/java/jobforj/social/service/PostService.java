@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Сервис для управления постами.
@@ -91,6 +92,17 @@ public class PostService {
     }
 
     /**
+     * Находит пост по id.
+     *
+     * @param id поста
+     * @return пост
+     */
+    @Transactional(readOnly = true)
+    public Optional<Post> findById(Long id) {
+        return postRepository.findById(id);
+    }
+
+    /**
      * Находит все посты пользователя.
      *
      * @param user пользователь
@@ -99,6 +111,17 @@ public class PostService {
     @Transactional(readOnly = true)
     public List<Post> findByUserOrderByCreatedAtDesc(User user) {
         return postRepository.findByUserOrderByCreatedAtDesc(user);
+    }
+
+    /**
+     * Находит все посты по Id пользователя.
+     *
+     * @param userId Id пользователя
+     * @return список постов пользователя
+     */
+    @Transactional(readOnly = true)
+    public List<Post> findByUserIdOrderByCreatedAtDesc(Long userId) {
+        return postRepository.findByUserId(userId);
     }
 
     /**

@@ -1,5 +1,6 @@
 package jobforj.social.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class Post {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "posts"})
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_posts_user_id"))
     private User user;
 

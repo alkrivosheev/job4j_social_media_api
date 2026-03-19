@@ -39,6 +39,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByUserOrderByCreatedAtDesc(User user);
 
+    List<Post> findByUserId(Long userId);
+
     List<Post> findByCreatedAtBetweenOrderByCreatedAtDesc(LocalDateTime startDate, LocalDateTime endDate);
 
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);

@@ -1,5 +1,6 @@
 package jobforj.social.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -68,6 +69,7 @@ public class User {
 
     // Relationships
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     @Builder.Default
     private List<Post> posts = new ArrayList<>();
 
