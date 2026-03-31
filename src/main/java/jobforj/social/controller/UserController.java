@@ -45,7 +45,7 @@ public class UserController {
 
     @PutMapping
     public ResponseEntity<Void> update(@RequestBody User user) {
-        if (userService.update(user)){
+        if (userService.update(user)) {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();

@@ -63,7 +63,7 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<Void> update(@RequestBody Post post) {
         postService.updatePost(Long.valueOf(post.getId()), post.getTitle(), post.getContent());
-        if (postService.update(post)){
+        if (postService.update(post)) {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
