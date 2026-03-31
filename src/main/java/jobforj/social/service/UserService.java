@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import static org.aspectj.runtime.internal.Conversions.longValue;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -20,8 +22,22 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteById(Long id) {
+    public boolean update(User user) {
+        if (user.getId() == null) {
+            return false;
+        }
+        if (userRepository.existsById(longValue(user.getId()))) {
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional
+    public boolean deleteById(Long id) {
         userRepository.deleteById(id);
+        userRepository.flush();
+        return !userRepository.existsById(id);
     }
 
     public Optional<User> findById(Long id) {

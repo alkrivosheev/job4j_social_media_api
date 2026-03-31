@@ -4,6 +4,7 @@ import jobforj.social.model.Post;
 import jobforj.social.model.User;
 import jobforj.social.repository.PostRepository;
 import jobforj.social.repository.ImageRepository;
+import jobforj.social.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.aspectj.runtime.internal.Conversions.longValue;
+
 /**
  * Сервис для управления постами.
  * Предоставляет методы для создания, обновления, удаления и получения постов.
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class PostService {
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
 
     /**
      * Создает новый пост.
@@ -67,8 +71,10 @@ public class PostService {
      * @return количество удаленных записей
      */
     @Transactional
-    public int deletePost(Long id) {
-        return postRepository.deletePost(id);
+    public boolean deletePost(Long id) {
+        postRepository.deletePost(id);
+        userRepository.flush();
+        return !postRepository.existsById(id);
     }
 
     /**
@@ -307,5 +313,21 @@ public class PostService {
     @Transactional
     public boolean deleteUserPost(Long userId, Long postId) {
         return postRepository.deleteUserPost(userId, postId) > 0;
+    }
+
+    public Post save(Post post) {
+        return postRepository.save(post);
+    }
+
+    @Transactional
+    public boolean update(Post post) {
+        if (post.getId() == null) {
+            return false;
+        }
+        if (postRepository.existsById(longValue(post.getId()))) {
+            postRepository.save(post);
+            return true;
+        }
+        return false;
     }
 }

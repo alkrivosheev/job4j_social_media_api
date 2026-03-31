@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -18,7 +19,15 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> save(@RequestBody User user) {
-        return ResponseEntity.ok(userService.save(user));
+        userService.save(user);
+        var uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(user.getId())
+                .toUri();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(uri)
+                .body(user);
     }
 
     @GetMapping("/{userId}")
@@ -35,15 +44,18 @@ public class UserController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public void update(@RequestBody User user) {
-        userService.save(user);
+    public ResponseEntity<Void> update(@RequestBody User user) {
+        if (userService.update(user)){
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{userId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeById(@PathVariable Long userId) {
-        userService.deleteById(userId);
+    public ResponseEntity<Void> removeById(@PathVariable long userId) {
+        if (userService.deleteById(userId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
-
 }

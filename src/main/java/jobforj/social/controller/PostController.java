@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
 
@@ -23,7 +24,15 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<Post> save(@RequestBody Post post) {
-        return ResponseEntity.ok(postService.createPost(post));
+        postService.save(post);
+        var uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(post.getId())
+                .toUri();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .location(uri)
+                .body(post);
     }
 
     @GetMapping("/{postId}")
@@ -52,13 +61,19 @@ public class PostController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public void update(@RequestBody Post post) {
+    public ResponseEntity<Void> update(@RequestBody Post post) {
         postService.updatePost(Long.valueOf(post.getId()), post.getTitle(), post.getContent());
+        if (postService.update(post)){
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{postId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeById(@PathVariable Long postId) {
-        postService.deletePost(postId);
+    public ResponseEntity<Void> removeById(@PathVariable Long postId) {
+        if (postService.deletePost(postId)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
