@@ -23,8 +23,7 @@ import java.util.Set;
 @Entity
 @Table(name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "username", name = "uk_users_username"),
-                @UniqueConstraint(columnNames = "email", name = "uk_users_email")
+               @UniqueConstraint(columnNames = "email", name = "uk_users_email")
         })
 @Data
 @NoArgsConstructor
@@ -43,7 +42,7 @@ public class User {
     @NotBlank(message = "Username is required")
     @Pattern(regexp = "^[a-zA-Z0-9_]{3,50}$",
             message = "Username must be 3-50 characters and contain only letters, numbers, and underscores")
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String username;
 
     @NotBlank(message = "Email is required")
