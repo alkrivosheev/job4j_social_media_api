@@ -1,5 +1,6 @@
 package jobforj.social.service;
 
+import jobforj.social.dto.UserPostsDto;
 import jobforj.social.model.Post;
 import jobforj.social.model.User;
 import jobforj.social.repository.PostRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.aspectj.runtime.internal.Conversions.longValue;
 
@@ -329,5 +331,24 @@ public class PostService {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Возвращает список DTO с пользователями и их публикациями по списку идентификаторов пользователей.
+     *
+     * @param userIds список идентификаторов пользователей
+     * @return список UserPostsDto
+     */
+    @Transactional
+    public List<UserPostsDto> getPostsByUserIds(List<Long> userIds) {
+        return userIds.stream()
+                .map(userId -> {
+                    List<Post> userPosts = findByUserIdOrderByCreatedAtDesc(userId);
+                    String username = userRepository.findById(userId)
+                            .map(User::getUsername)
+                            .orElse(null);
+                    return new UserPostsDto(userId, username, userPosts);
+                })
+                .collect(Collectors.toList());
     }
 }

@@ -1,5 +1,6 @@
 package jobforj.social.controller;
 
+import jobforj.social.dto.UserPostsDto;
 import jobforj.social.model.Post;
 import jobforj.social.service.PostService;
 import lombok.AllArgsConstructor;
@@ -75,5 +76,17 @@ public class PostController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Возвращает список DTO с публикациями для указанных идентификаторов пользователей.
+     *
+     * @param userIds список идентификаторов пользователей
+     * @return список UserPostsDto
+     */
+    @PostMapping("/users/posts")
+    public ResponseEntity<List<UserPostsDto>> getPostsByUserIds(@RequestBody List<Long> userIds) {
+        List<UserPostsDto> result = postService.getPostsByUserIds(userIds);
+        return ResponseEntity.ok(result);
     }
 }
